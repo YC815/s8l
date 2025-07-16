@@ -204,7 +204,7 @@ export default function Home() {
                   <button
                     type="submit"
                     disabled={!input.trim() || isLoading || !!inputError}
-                    className="px-8 bg-stone-800 hover:bg-stone-900 disabled:bg-stone-400 disabled:cursor-not-allowed text-white rounded-xl transition-all duration-300 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 disabled:transform-none min-w-[120px] h-14"
+                    className="px-8 bg-stone-800 hover:bg-stone-900 disabled:bg-stone-400 dark:disabled:bg-stone-500 dark:disabled:text-stone-400 disabled:cursor-not-allowed text-white dark:bg-stone-300 dark:hover:bg-stone-200 dark:text-stone-800 rounded-xl transition-all duration-300 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 disabled:transform-none min-w-[120px] h-14"
                   >
                     {isLoading ? (
                       <div className="flex items-center space-x-2">
