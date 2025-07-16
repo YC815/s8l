@@ -344,6 +344,17 @@ export default function Home() {
           </div>
         )}
       </div>
+      
+      {/* Zeabur 部署徽章 */}
+      <div className="fixed bottom-4 right-4 opacity-60 hover:opacity-100 transition-opacity duration-300 z-40">
+        <a href="https://zeabur.com/referral?referralCode=YC815&utm_source=YC815">
+          <img 
+            src="https://zeabur.com/deployed-on-zeabur-dark.svg" 
+            alt="Deployed on Zeabur"
+            className="h-6"
+          />
+        </a>
+      </div>
     </div>
   )
 }
