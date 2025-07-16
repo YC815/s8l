@@ -151,7 +151,7 @@ export default function Home() {
             </div>
           </div>
           <h1 className="text-5xl font-bold text-stone-800 dark:text-stone-100 mb-4">
-            短網址服務
+            S8L 短網址
           </h1>
           <p className="text-lg text-stone-600 dark:text-stone-300 max-w-2xl mx-auto">
             極簡、快速、安全的網址縮短服務，支援 QR Code 生成

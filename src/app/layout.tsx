@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "短網址服務",
-  description: "極簡短網址服務，提供網址縮短、QR Code 生成功能",
+  title: "S8L 短網址服務",
+  description: "S[horterur]L",
 };
 
 export default function RootLayout({
