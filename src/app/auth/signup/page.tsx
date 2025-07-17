@@ -21,20 +21,27 @@ export default function SignUpPage() {
     setIsLoading(true)
     setError('')
 
+    console.log('📝 Frontend: Starting sign up process')
+
     // Basic client-side validation
     if (!email || !password) {
+      console.log('❌ Frontend: Missing email or password')
       setError('請填寫所有必填字段')
       setIsLoading(false)
       return
     }
 
     if (password.length < 8) {
+      console.log('❌ Frontend: Password too short')
       setError('密碼至少需要 8 個字符')
       setIsLoading(false)
       return
     }
 
+    console.log('✅ Frontend: Client validation passed')
+
     try {
+      console.log('🚀 Frontend: Calling registration API')
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
@@ -48,16 +55,24 @@ export default function SignUpPage() {
       })
 
       const data = await response.json()
+      console.log('📝 Frontend: Registration response:', { status: response.status, data })
 
       if (!response.ok) {
+        console.log('❌ Frontend: Registration failed')
         if (response.status === 429) {
-          setError('註冊請求過於頻繁，請稍後重試')
+          setError('註冊請求過於頻繁，請稍後重試（每小時最多 5 次註冊嘗試）')
+        } else if (response.status === 400) {
+          setError(data.error || '註冊資料驗證失敗，請檢查您的輸入')
+        } else if (response.status === 500) {
+          setError('伺服器錯誤，請稍後重試或聯絡系統管理員')
         } else {
-          setError(data.error || '註冊失敗')
+          setError(data.error || `註冊失敗（狀態碼：${response.status}）`)
         }
         return
       }
 
+      console.log('✅ Frontend: Registration successful, attempting auto sign in')
+      
       // Auto sign in after successful registration
       const result = await signIn('credentials', {
         email: email.trim().toLowerCase(),
@@ -65,18 +80,26 @@ export default function SignUpPage() {
         redirect: false,
       })
 
+      console.log('📝 Frontend: Auto sign in result:', result)
+
       if (result?.error) {
-        setError('註冊成功但登入失敗，請手動登入')
+        console.log('❌ Frontend: Auto sign in failed')
+        setError('註冊成功但自動登入失敗，請手動登入。您的帳戶已建立成功。')
         // Wait a bit before redirecting to show the message
         setTimeout(() => {
           router.push('/auth/signin')
-        }, 2000)
+        }, 3000)
       } else {
+        console.log('✅ Frontend: Auto sign in successful, redirecting to home')
         router.push('/')
       }
     } catch (error) {
-      console.error('Sign up error:', error)
-      setError('註冊失敗，請重試')
+      console.error('❌ Frontend: Sign up error:', error)
+      if (error instanceof Error) {
+        setError(`註冊失敗：${error.message}`)
+      } else {
+        setError('網路錯誤或伺服器無法連接，請檢查網路連線後重試')
+      }
     } finally {
       setIsLoading(false)
     }
@@ -103,7 +126,21 @@ export default function SignUpPage() {
 
           {error && (
             <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-r-xl">
-              <p className="text-red-700 text-sm">{error}</p>
+              <div className="flex items-start">
+                <div className="flex-shrink-0">
+                  <svg className="w-5 h-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-red-800">
+                    註冊失敗
+                  </h3>
+                  <p className="text-sm text-red-700 mt-1">
+                    {error}
+                  </p>
+                </div>
+              </div>
             </div>
           )}
 
