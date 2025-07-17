@@ -243,6 +243,9 @@ function SignInForm() {
                   <a href="/api/auth/test-session" target="_blank" className="text-xs text-blue-600 hover:underline">
                     Test Session
                   </a>
+                  <a href="/api/auth/session" target="_blank" className="text-xs text-blue-600 hover:underline">
+                    Session API
+                  </a>
                   <a href="/api/auth/logs" target="_blank" className="text-xs text-blue-600 hover:underline">
                     View Logs
                   </a>

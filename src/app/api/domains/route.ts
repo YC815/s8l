@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
+import { auth } from '@/lib/auth-simple'
 import { prisma } from '@/lib/db'
 
 const RESERVED_PREFIXES = ['www', 'api', 'admin', 'app', 'mail', 'ftp', 'support']

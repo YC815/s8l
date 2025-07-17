@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { generateShortCode, validateUrl, fetchPageTitle } from '@/lib/url-shortener'
-import { auth } from '@/lib/auth'
+import { auth } from '@/lib/auth-simple'
 
 export async function POST(request: NextRequest) {
   try {

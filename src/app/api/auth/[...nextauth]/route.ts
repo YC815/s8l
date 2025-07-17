@@ -1,5 +1,3 @@
-import { handlers } from '@/lib/auth'
-
-console.log('📝 NextAuth API route handlers initialized')
+import { handlers } from '@/lib/auth-simple'
 
 export const { GET, POST } = handlers
