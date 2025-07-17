@@ -67,28 +67,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (user) {
         token.id = user.id
       }
-      
-      // Handle OAuth provider information
-      if (account?.provider && account.provider !== 'credentials') {
-        // Update or create user with OAuth provider info
-        await prisma.user.upsert({
-          where: { email: user.email! },
-          update: {
-            name: user.name,
-            image: user.image,
-            provider: account.provider,
-            providerId: account.providerAccountId,
-          },
-          create: {
-            email: user.email!,
-            name: user.name,
-            image: user.image,
-            provider: account.provider,
-            providerId: account.providerAccountId,
-          }
-        })
-      }
-      
       return token
     },
     async session({ session, token }) {
@@ -99,12 +77,32 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
     async signIn({ user, account }) {
       if (account?.provider === 'google' || account?.provider === 'github') {
-        // Allow OAuth sign in
+        // Handle OAuth provider information in signIn callback
+        try {
+          await prisma.user.upsert({
+            where: { email: user.email! },
+            update: {
+              name: user.name,
+              image: user.image,
+              provider: account.provider,
+              providerId: account.providerAccountId,
+            },
+            create: {
+              email: user.email!,
+              name: user.name,
+              image: user.image,
+              provider: account.provider,
+              providerId: account.providerAccountId,
+            }
+          })
+        } catch (error) {
+          console.error('Error upserting OAuth user:', error)
+          return false
+        }
         return true
       }
       
       if (account?.provider === 'credentials') {
-        // Allow credentials sign in
         return true
       }
       
