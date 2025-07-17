@@ -1,7 +1,6 @@
 import NextAuth from 'next-auth'
 import { PrismaAdapter } from '@auth/prisma-adapter'
 import CredentialsProvider from 'next-auth/providers/credentials'
-import bcrypt from 'bcryptjs'
 import { prisma } from './db'
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
@@ -18,35 +17,28 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return null
         }
 
-        const user = await prisma.user.findUnique({
-          where: {
-            email: credentials.email as string
+        try {
+          // Call our API endpoint for password verification
+          const response = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/auth/verify-password`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              email: credentials.email,
+              password: credentials.password
+            })
+          })
+
+          if (!response.ok) {
+            return null
           }
-        })
 
-        if (!user || !user.password) {
+          const { user } = await response.json()
+          return user
+        } catch (error) {
+          console.error('Authorization error:', error)
           return null
-        }
-
-        const isValidPassword = await bcrypt.compare(
-          credentials.password as string,
-          user.password
-        )
-
-        if (!isValidPassword) {
-          return null
-        }
-
-        // TODO: Re-enable email verification when email service is configured
-        // if (!user.emailVerified) {
-        //   throw new Error('請先驗證您的電子郵件地址')
-        // }
-
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          image: user.image,
         }
       }
     })
