@@ -1,27 +1,39 @@
-# S8L - 極簡短網址服務
+# S8L - 進階短網址服務
 
-> 一個基於 Next.js 15 和 PostgreSQL 的現代化短網址服務，提供 QR Code 生成、深色模式和中文界面。
+> 一個基於 Next.js 15 和 PostgreSQL 的現代化短網址服務，提供用戶認證、自訂域名、QR Code 生成、深色模式和中文界面。
 
 ![S8L Demo](https://via.placeholder.com/800x400/1c1917/ffffff?text=S8L+Short+URL+Service)
 
 ## ✨ 特色功能
 
-- 🔗 **智能短網址生成** - 使用 URL 安全字符集，6 位字符長度
+### 核心功能
+- 🔗 **雙模式短網址** - 基礎隨機短碼 + 自訂域名路徑
 - 📱 **QR Code 自動生成** - 每個短網址都自動生成對應的 QR Code
+- 📊 **點擊統計** - 追蹤短網址的使用次數
+- 📄 **智能標題抓取** - 自動獲取目標網頁標題 (流式讀取，1秒超時)
+
+### 用戶功能
+- 👤 **完整用戶系統** - 註冊、登入、密碼重置、郵件驗證
+- 🏷️ **自訂域名** - 創建如 `myname.s8l.xyz/mylink` 的個性化短網址
+- 📋 **用戶儀表板** - 管理所有短網址，查看統計資料
+- 🗂️ **網址管理** - 編輯、刪除已創建的短網址
+
+### 系統特性
 - 🌙 **深色/亮色模式** - 支持主題切換，記住用戶偏好
 - 🚫 **防套娃機制** - 阻止縮短自己服務的網址
-- 📄 **智能標題抓取** - 自動獲取目標網頁標題
 - 📱 **響應式設計** - 完美適配桌面和移動設備
 - 🔒 **安全可靠** - 輸入驗證、重複檢測、錯誤處理
 - 🇹🇼 **中文界面** - 完整的繁體中文用戶界面
 
 ## 🛠 技術棧
 
-- **前端**: Next.js 15 (App Router), React 19, Tailwind CSS v4
+- **前端**: Next.js 15 (App Router), React 19, TypeScript
+- **樣式**: Tailwind CSS v4, Lucide React Icons
 - **後端**: Next.js API Routes, Prisma ORM
 - **資料庫**: PostgreSQL
+- **認證**: NextAuth.js 5.0, bcryptjs
+- **功能**: QRCode.js, Zod 驗證, Nodemailer
 - **部署**: Zeabur (推薦) / Vercel / 自託管
-- **其他**: QRCode.js, Lucide React Icons
 
 ## 🚀 快速開始
 
@@ -185,10 +197,13 @@ server {
 
 ### 環境變數
 
-| 變數名 | 描述 | 範例 |
-|--------|------|------|
-| `DATABASE_URL` | PostgreSQL 連接字符串 | `postgresql://user:pass@host:5432/db` |
-| `NEXT_PUBLIC_BASE_URL` | 短網址域名 | `https://s8l.xyz` |
+| 變數名 | 描述 | 範例 | 必需 |
+|--------|------|---------|------|
+| `DATABASE_URL` | PostgreSQL 連接字符串 | `postgresql://user:pass@host:5432/db` | ✅ |
+| `NEXT_PUBLIC_BASE_URL` | 短網址域名 | `https://s8l.xyz` | ✅ |
+| `NEXTAUTH_SECRET` | NextAuth.js 密鑰 | `your-random-secret-key` | ✅ |
+| `EMAIL_SERVER` | 郵件服務器 SMTP URL | `smtp://user:pass@smtp.example.com:587` | ❌ |
+| `EMAIL_FROM` | 發件人地址 | `noreply@your-domain.com` | ❌ |
 
 ### 資料庫 Schema
 
@@ -281,9 +296,12 @@ npx prisma db push   # 推送 Schema 到資料庫
 
 ## 🛡️ 安全特性
 
-- **輸入驗證**: 嚴格的 URL 格式檢查
+- **輸入驗證**: 嚴格的 URL 格式檢查和 Zod 驗證
 - **防套娃**: 阻止縮短自己服務的 URL
 - **重複檢測**: 相同 URL 返回已存在的短代碼
+- **身份驗證**: NextAuth.js 保護用戶功能
+- **密碼加密**: bcryptjs 雜湊加密
+- **路由保護**: 中間件保護私人頁面
 - **錯誤處理**: 完善的錯誤處理和用戶提示
 - **SQL 注入防護**: 使用 Prisma ORM 參數化查詢
 
@@ -307,6 +325,16 @@ export function generateShortCode(length: number = 6): string {
 
 編輯 `src/app/api/shorten/route.ts` 中的域名檢查邏輯。
 
+### 自訂域名前綴長度
+
+編輯 `src/components/CustomDomainModal.tsx` 中的驗證邏輯：
+
+```typescript
+const schema = z.object({
+  prefix: z.string().min(3).max(10).regex(/^[a-zA-Z0-9-_]+$/)
+});
+```
+
 ## 📝 授權
 
 MIT License - 詳見 [LICENSE](LICENSE) 文件。
@@ -321,6 +349,22 @@ MIT License - 詳見 [LICENSE](LICENSE) 文件。
 1. 查看 [Issues](https://github.com/your-username/s8l/issues)
 2. 創建新的 Issue
 3. 發送 Email 到 your-email@example.com
+
+## 🔄 更新日誌
+
+### v2.0.0 (最新)
+- ✨ 新增完整用戶認證系統
+- 🏷️ 支援自訂域名功能
+- 📊 添加點擊統計功能
+- 📋 用戶儀表板和網址管理
+- 🔧 優化標題獲取性能
+- 💌 郵件驗證和密碼重置
+
+### v1.0.0
+- 🔗 基礎短網址生成
+- 📱 QR Code 生成
+- 🌙 深色模式支援
+- 🇹🇼 中文界面
 
 ---
 

@@ -231,27 +231,6 @@ function SignInForm() {
                 立即註冊
               </Link>
             </p>
-            
-            {/* Debug links - only show in development */}
-            {process.env.NODE_ENV === 'development' && (
-              <div className="mt-4 space-y-2">
-                <p className="text-xs text-stone-500">Debug Links:</p>
-                <div className="flex justify-center space-x-2">
-                  <a href="/api/auth/debug" target="_blank" className="text-xs text-blue-600 hover:underline">
-                    Debug Info
-                  </a>
-                  <a href="/api/auth/test-session" target="_blank" className="text-xs text-blue-600 hover:underline">
-                    Test Session
-                  </a>
-                  <a href="/api/auth/session" target="_blank" className="text-xs text-blue-600 hover:underline">
-                    Session API
-                  </a>
-                  <a href="/api/auth/logs" target="_blank" className="text-xs text-blue-600 hover:underline">
-                    View Logs
-                  </a>
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>

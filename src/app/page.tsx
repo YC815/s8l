@@ -1,12 +1,14 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useSession, signOut } from 'next-auth/react'
-import { Copy, Sun, Moon, Link, ExternalLink, Check, LogOut, LayoutDashboard } from 'lucide-react'
+import { useSession } from 'next-auth/react'
+import { Copy, Link, ExternalLink, Check } from 'lucide-react'
 import Link_Component from 'next/link'
 import Image from 'next/image'
 import QRCode from 'qrcode'
 import CustomDomainModal from '@/components/CustomDomainModal'
+import Navigation from '@/components/Navigation'
+import { useLanguage } from '@/hooks/useLanguage'
 
 interface ShortenedUrl {
   shortCode: string
@@ -18,6 +20,7 @@ interface ShortenedUrl {
 
 export default function Home() {
   const { data: session, status } = useSession()
+  const { tString } = useLanguage()
   const [input, setInput] = useState('')
   const [customTitle, setCustomTitle] = useState('')
   const [customPath, setCustomPath] = useState('')
@@ -47,13 +50,13 @@ export default function Home() {
       
       const urlObj = new URL(validatedUrl)
       if (urlObj.hostname === 's8l.xyz' || urlObj.hostname === 'www.s8l.xyz') {
-        setInputError('不能縮短本服務的網址')
+        setInputError(tString('cannotShortenSelf'))
         return
       }
       
       setInputError('')
     } catch {
-      setInputError('請輸入有效的網址格式')
+      setInputError(tString('invalidUrl'))
     }
   }
 
@@ -74,7 +77,7 @@ export default function Home() {
       const data = await response.json()
       
       if (!response.ok) {
-        throw new Error(data.error || '發生錯誤')
+        throw new Error(data.error || tString('errorOccurred'))
       }
       
       // Generate QR code
@@ -90,7 +93,7 @@ export default function Home() {
       }, 100)
       
     } catch (err) {
-      setError(err instanceof Error ? err.message : '發生未知錯誤')
+      setError(err instanceof Error ? err.message : tString('unknownError'))
     } finally {
       setIsLoading(false)
     }
@@ -118,7 +121,7 @@ export default function Home() {
       const data = await response.json()
       
       if (!response.ok) {
-        throw new Error(data.error || '發生錯誤')
+        throw new Error(data.error || tString('errorOccurred'))
       }
       
       // Generate QR code
@@ -144,7 +147,7 @@ export default function Home() {
       }, 100)
       
     } catch (err) {
-      setError(err instanceof Error ? err.message : '發生未知錯誤')
+      setError(err instanceof Error ? err.message : tString('unknownError'))
     } finally {
       setIsLoading(false)
     }
@@ -207,28 +210,16 @@ export default function Home() {
     <div className={`min-h-screen transition-all duration-500 ${
       darkMode ? 'dark bg-gradient-to-br from-stone-900 to-stone-800' : 'bg-gradient-to-br from-stone-50 via-stone-100 to-stone-200'
     }`}>
+      {/* Navigation */}
+      <Navigation 
+        mode="home" 
+        darkMode={darkMode} 
+        onToggleDarkMode={toggleDarkMode} 
+      />
+      
       <div className="container mx-auto px-4 py-12 max-w-5xl">
         {/* Header */}
-        <div className="text-center mb-16 relative">
-          {/* Navigation */}
-          {session && (
-            <div className="absolute top-0 right-0 flex items-center gap-2">
-              <Link_Component
-                href="/dashboard"
-                className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-stone-600 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200 transition-colors"
-              >
-                <LayoutDashboard className="w-4 h-4" />
-                Dashboard
-              </Link_Component>
-              <button
-                onClick={() => signOut({ callbackUrl: '/' })}
-                className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-stone-600 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200 transition-colors"
-              >
-                <LogOut className="w-4 h-4" />
-                登出
-              </button>
-            </div>
-          )}
+        <div className="text-center mb-16 relative mt-8">
 
           <div className="flex justify-center items-center mb-6">
             <div className="p-4 rounded-2xl bg-stone-800 dark:bg-stone-200 shadow-xl">
@@ -236,45 +227,32 @@ export default function Home() {
             </div>
           </div>
           <h1 className="text-5xl font-bold text-stone-800 dark:text-stone-100 mb-4">
-            S8L 短網址
+            {tString('title')}
           </h1>
-          <p className="text-lg text-stone-600 dark:text-stone-300 max-w-2xl mx-auto">
-            極簡、快速、安全的網址縮短服務，支援 QR Code 生成
-          </p>
           
           {/* Login prompt for non-logged in users */}
           {!session && (
             <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl max-w-md mx-auto">
               <p className="text-blue-700 dark:text-blue-300 text-sm mb-3">
-                登入可以自訂域名管理以及紀錄短網址紀錄
+                {tString('loginPrompt')}
               </p>
               <div className="flex gap-2 justify-center">
                 <Link_Component
                   href="/auth/signin"
                   className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
                 >
-                  登入
+                  {tString('login')}
                 </Link_Component>
                 <Link_Component
                   href="/auth/signup"
                   className="px-4 py-2 border border-blue-600 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-sm font-medium rounded-lg transition-colors"
                 >
-                  註冊
+                  {tString('signup')}
                 </Link_Component>
               </div>
             </div>
           )}
 
-          <button
-            onClick={toggleDarkMode}
-            className="fixed top-6 right-6 p-3 rounded-full bg-stone-200 dark:bg-stone-700 hover:bg-stone-300 dark:hover:bg-stone-600 transition-all duration-300 shadow-lg hover:shadow-xl z-50"
-          >
-            {darkMode ? (
-              <Sun className="h-6 w-6 text-amber-500" />
-            ) : (
-              <Moon className="h-6 w-6 text-stone-600" />
-            )}
-          </button>
         </div>
 
         {/* Main Form */}
@@ -293,7 +271,7 @@ export default function Home() {
                           : 'text-stone-600 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200'
                       }`}
                     >
-                      基礎短網址
+                      {tString('basicShortUrl')}
                     </button>
                     <button
                       onClick={() => setActiveTab('custom')}
@@ -303,7 +281,7 @@ export default function Home() {
                           : 'text-stone-600 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200'
                       }`}
                     >
-                      自訂義短網址
+                      {tString('customShortUrl')}
                     </button>
                   </div>
                 </div>
@@ -316,7 +294,7 @@ export default function Home() {
                     <div className="flex flex-col lg:flex-row gap-6">
                       <div className="flex-1">
                         <label className="block text-sm font-semibold text-stone-700 dark:text-stone-300 mb-3">
-                          請輸入要縮短的網址
+                          {tString('enterUrlLabel')}
                         </label>
                         <div className="relative">
                           <input
@@ -350,10 +328,10 @@ export default function Home() {
                           {isLoading ? (
                             <div className="flex items-center space-x-2">
                               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                              <span>處理中</span>
+                              <span>{tString('processing')}</span>
                             </div>
                           ) : (
-                            '縮短網址'
+                            tString('shortenUrl')
                           )}
                         </button>
                       </div>
@@ -365,7 +343,7 @@ export default function Home() {
                   <form onSubmit={handleCustomSubmit} className="space-y-6">
                     <div>
                       <label className="block text-sm font-semibold text-stone-700 dark:text-stone-300 mb-3">
-                        請輸入要縮短的網址
+                        {tString('enterUrlLabel')}
                       </label>
                       <div className="relative">
                         <input
@@ -393,13 +371,13 @@ export default function Home() {
 
                     <div>
                       <label className="block text-sm font-semibold text-stone-700 dark:text-stone-300 mb-3">
-                        標題（選填）
+                        {tString('titleLabel')}
                       </label>
                       <input
                         type="text"
                         value={customTitle}
                         onChange={(e) => setCustomTitle(e.target.value)}
-                        placeholder="自訂標題，留空則自動抓取"
+                        placeholder={tString('titlePlaceholder')}
                         className="w-full p-4 border-2 border-stone-200 dark:border-stone-600 rounded-xl bg-stone-50 dark:bg-stone-900 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 focus:ring-2 focus:ring-stone-500 focus:border-stone-500 transition-all duration-300"
                         disabled={isLoading}
                       />
@@ -407,7 +385,7 @@ export default function Home() {
 
                     <div>
                       <label className="block text-sm font-semibold text-stone-700 dark:text-stone-300 mb-3">
-                        自訂短網址
+                        {tString('customUrlLabel')}
                       </label>
                       <div className="flex gap-3 items-center">
                         <button
@@ -416,7 +394,7 @@ export default function Home() {
                           className="px-4 py-4 bg-stone-100 dark:bg-stone-700 border-2 border-stone-200 dark:border-stone-600 rounded-xl hover:bg-stone-200 dark:hover:bg-stone-600 transition-colors min-w-0 h-14"
                         >
                           <span className="text-stone-800 dark:text-stone-200 font-medium">
-                            {selectedDomainPrefix ? `${selectedDomainPrefix}.s8l.xyz` : '選擇域名'}
+                            {selectedDomainPrefix ? `${selectedDomainPrefix}.s8l.xyz` : tString('selectDomain')}
                           </span>
                         </button>
                         <span className="text-stone-600 dark:text-stone-400 font-medium">/</span>
@@ -424,7 +402,7 @@ export default function Home() {
                           type="text"
                           value={customPath}
                           onChange={(e) => setCustomPath(e.target.value)}
-                          placeholder="自訂路徑"
+                          placeholder={tString('customPathPlaceholder')}
                           className="flex-1 p-4 border-2 border-stone-200 dark:border-stone-600 rounded-xl bg-stone-50 dark:bg-stone-900 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 focus:ring-2 focus:ring-stone-500 focus:border-stone-500 transition-all duration-300 h-14"
                           disabled={isLoading}
                         />
@@ -436,10 +414,10 @@ export default function Home() {
                           {isLoading ? (
                             <div className="flex items-center space-x-2">
                               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                              <span>處理中</span>
+                              <span>{tString('processing')}</span>
                             </div>
                           ) : (
-                            '建立'
+                            tString('create')
                           )}
                         </button>
                       </div>
@@ -472,7 +450,7 @@ export default function Home() {
           <div id="results" className="max-w-4xl mx-auto">
             <div className="text-center mb-8">
               <h2 className="text-2xl font-bold text-stone-800 dark:text-stone-200 mb-2">
-                縮短結果
+                {tString('resultsTitle')}
               </h2>
               <div className="w-20 h-1 bg-stone-800 dark:bg-stone-200 mx-auto rounded-full"></div>
             </div>
@@ -503,7 +481,7 @@ export default function Home() {
                         {/* 原始網址 */}
                         <div className="space-y-3">
                           <label className="block text-sm font-semibold text-stone-700 dark:text-stone-300">
-                            原始網址
+                            {tString('originalUrl')}
                           </label>
                           <div className="flex items-center space-x-3 p-4 bg-stone-100 dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-600">
                             <p className="text-sm text-stone-600 dark:text-stone-400 break-all flex-1">
@@ -523,7 +501,7 @@ export default function Home() {
                         {/* 縮短網址 */}
                         <div className="space-y-3">
                           <label className="block text-sm font-semibold text-stone-700 dark:text-stone-300">
-                            短網址
+                            {tString('shortUrl')}
                           </label>
                           <div className="flex items-center space-x-3 p-4 bg-gradient-to-r from-stone-200 to-stone-300 dark:from-stone-700 dark:to-stone-800 rounded-xl border-2 border-stone-300 dark:border-stone-600">
                             <p className="text-lg font-mono text-stone-800 dark:text-stone-200 flex-1 font-semibold">
@@ -532,7 +510,7 @@ export default function Home() {
                             <button
                               onClick={() => copyToClipboard(result.shortUrl)}
                               className="p-2 hover:bg-stone-200 dark:hover:bg-stone-600 rounded-lg transition-all duration-200 transform hover:scale-110 flex-shrink-0"
-                              title="複製短網址"
+                              title={tString('copyShortUrl')}
                             >
                               {copiedUrl === result.shortUrl ? (
                                 <Check className="h-5 w-5 text-green-500 animate-pulse" />
@@ -549,7 +527,7 @@ export default function Home() {
                         <div className="flex-shrink-0 flex items-center justify-center lg:justify-start">
                           <div className="text-center">
                             <p className="text-sm font-semibold text-stone-700 dark:text-stone-300 mb-4">
-                              QR Code
+                              {tString('qrCode')}
                             </p>
                             <div className="p-4 bg-stone-50 dark:bg-stone-900 rounded-2xl border-2 border-stone-200 dark:border-stone-600 shadow-inner">
                               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -560,7 +538,7 @@ export default function Home() {
                               />
                             </div>
                             <p className="text-xs text-stone-500 dark:text-stone-400 mt-2">
-                              掃描開啟連結
+                              {tString('qrCodeHint')}
                             </p>
                           </div>
                         </div>

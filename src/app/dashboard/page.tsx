@@ -1,28 +1,25 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { useSession, signOut } from 'next-auth/react'
+import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { 
   Search, 
-  Link as LinkIcon, 
+  Link as LinkIcon,
   ExternalLink, 
   Copy, 
   Check, 
   Trash2, 
-  LogOut,
-  Home,
   Settings,
   QrCode,
   TrendingUp,
   Clock,
-  Sun,
-  Moon,
   Loader2
 } from 'lucide-react'
-import Link from 'next/link'
 import Image from 'next/image'
 import QRCode from 'qrcode'
+import Navigation from '@/components/Navigation'
+import { useLanguage } from '@/hooks/useLanguage'
 
 interface UserUrl {
   id: string
@@ -44,8 +41,9 @@ interface CustomDomain {
 }
 
 export default function DashboardPage() {
-  const { data: session, status } = useSession()
+  const { status } = useSession()
   const router = useRouter()
+  const { language, tString } = useLanguage()
   
   const [urls, setUrls] = useState<UserUrl[]>([])
   const [domains, setDomains] = useState<CustomDomain[]>([])
@@ -148,7 +146,7 @@ export default function DashboardPage() {
   }
 
   const deleteUrl = async (id: string) => {
-    if (!confirm('確定要刪除此短網址嗎？')) return
+    if (!confirm(tString('confirmDelete'))) return
 
     setIsDeleting(id)
     try {
@@ -167,7 +165,7 @@ export default function DashboardPage() {
   }
 
   const deleteDomain = async (id: string) => {
-    if (!confirm('確定要刪除此域名嗎？這將同時刪除該域名下的所有短網址。')) return
+    if (!confirm(tString('confirmDeleteDomain'))) return
 
     try {
       const response = await fetch(`/api/domains/${id}`, {
@@ -196,6 +194,17 @@ export default function DashboardPage() {
 
   const generateQRCode = async (url: string, id: string) => {
     try {
+      // 如果已經有 QR code，則移除它（切換功能）
+      if (qrCodes[id]) {
+        setQrCodes(prev => {
+          const newQrCodes = { ...prev }
+          delete newQrCodes[id]
+          return newQrCodes
+        })
+        return
+      }
+      
+      // 如果沒有 QR code，則生成新的
       const qrCode = await QRCode.toDataURL(url)
       setQrCodes(prev => ({ ...prev, [id]: qrCode }))
     } catch (error) {
@@ -204,7 +213,8 @@ export default function DashboardPage() {
   }
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('zh-TW', {
+    const locale = language === 'zh' ? 'zh-TW' : 'en-US'
+    return new Date(dateString).toLocaleDateString(locale, {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -229,62 +239,21 @@ export default function DashboardPage() {
     <div className={`min-h-screen transition-all duration-500 ${
       darkMode ? 'dark bg-gradient-to-br from-stone-900 to-stone-800' : 'bg-gradient-to-br from-stone-50 via-stone-100 to-stone-200'
     }`}>
-      {/* Header */}
-      <div className="bg-white/80 dark:bg-stone-800/90 backdrop-blur-sm border-b border-stone-200 dark:border-stone-700 sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="p-2 rounded-xl bg-stone-800 dark:bg-stone-200">
-                <LinkIcon className="h-6 w-6 text-stone-100 dark:text-stone-800" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-stone-800 dark:text-stone-100">
-                  Dashboard
-                </h1>
-                <p className="text-sm text-stone-600 dark:text-stone-400">
-                  歡迎回來，{session?.user?.name || session?.user?.email}
-                </p>
-              </div>
-            </div>
+      {/* Navigation */}
+      <Navigation 
+        mode="dashboard" 
+        darkMode={darkMode} 
+        onToggleDarkMode={toggleDarkMode} 
+      />
 
-            <div className="flex items-center gap-2">
-              <Link
-                href="/"
-                className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-stone-600 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200 transition-colors"
-              >
-                <Home className="w-4 h-4" />
-                首頁
-              </Link>
-              <button
-                onClick={toggleDarkMode}
-                className="p-2 rounded-lg bg-stone-200 dark:bg-stone-700 hover:bg-stone-300 dark:hover:bg-stone-600 transition-colors"
-              >
-                {darkMode ? (
-                  <Sun className="h-4 w-4 text-amber-500" />
-                ) : (
-                  <Moon className="h-4 w-4 text-stone-600" />
-                )}
-              </button>
-              <button
-                onClick={() => signOut({ callbackUrl: '/' })}
-                className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-stone-600 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200 transition-colors"
-              >
-                <LogOut className="w-4 h-4" />
-                登出
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
+      <div className="container mx-auto px-4 py-8 max-w-6xl mt-4">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-white/80 dark:bg-stone-800/90 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-stone-200 dark:border-stone-700">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-stone-600 dark:text-stone-400">
-                  總短網址數
+                  {tString('totalUrls')}
                 </p>
                 <p className="text-2xl font-bold text-stone-800 dark:text-stone-100">
                   {urls.length}
@@ -300,7 +269,7 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-stone-600 dark:text-stone-400">
-                  總點擊數
+                  {tString('totalClicks')}
                 </p>
                 <p className="text-2xl font-bold text-stone-800 dark:text-stone-100">
                   {urls.reduce((total, url) => total + url.clickCount, 0)}
@@ -316,7 +285,7 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-stone-600 dark:text-stone-400">
-                  自訂域名數
+                  {tString('customDomains')}
                 </p>
                 <p className="text-2xl font-bold text-stone-800 dark:text-stone-100">
                   {domains.length}/2
@@ -333,14 +302,14 @@ export default function DashboardPage() {
         <div className="bg-white/80 dark:bg-stone-800/90 backdrop-blur-sm rounded-2xl shadow-xl border border-stone-200 dark:border-stone-700 mb-8">
           <div className="p-6 border-b border-stone-200 dark:border-stone-700">
             <h2 className="text-lg font-semibold text-stone-800 dark:text-stone-100">
-              自訂域名管理
+              {tString('customDomainManagement')}
             </h2>
           </div>
           <div className="p-6">
             {domains.length === 0 ? (
               <div className="text-center py-6">
                 <p className="text-stone-500 dark:text-stone-400">
-                  您還沒有自訂域名，每位用戶可創建最多 2 個域名
+                  {tString('noDomains')}
                 </p>
               </div>
             ) : (
@@ -352,7 +321,7 @@ export default function DashboardPage() {
                         {domain.prefix}.s8l.xyz
                       </p>
                       <p className="text-sm text-stone-600 dark:text-stone-400">
-                        建立於 {formatDate(domain.createdAt)}
+                        {tString('createdAt')} {formatDate(domain.createdAt)}
                       </p>
                     </div>
                     <button
@@ -377,7 +346,7 @@ export default function DashboardPage() {
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-stone-400" />
                   <input
                     type="text"
-                    placeholder="搜尋短網址標題或原始網址..."
+                    placeholder={tString('searchPlaceholder')}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full pl-10 pr-4 py-3 border border-stone-300 dark:border-stone-600 rounded-xl bg-stone-50 dark:bg-stone-900 text-stone-800 dark:text-stone-200 placeholder-stone-400 focus:ring-2 focus:ring-stone-500 focus:border-stone-500 transition-colors"
@@ -389,25 +358,27 @@ export default function DashboardPage() {
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="px-4 py-3 border border-stone-300 dark:border-stone-600 rounded-xl bg-stone-50 dark:bg-stone-900 text-stone-800 dark:text-stone-200 focus:ring-2 focus:ring-stone-500 focus:border-stone-500 transition-colors"
+                  className="px-4 py-3 border border-stone-300 dark:border-stone-600 rounded-xl bg-stone-50 dark:bg-stone-900 text-stone-800 dark:text-stone-200 focus:ring-2 focus:ring-stone-500 focus:border-stone-500 transition-colors cursor-pointer"
                 >
-                  <option value="newest">最新</option>
-                  <option value="oldest">最舊</option>
-                  <option value="clicks">點擊數</option>
+                  <option value="newest">{tString('newest')}</option>
+                  <option value="oldest">{tString('oldest')}</option>
+                  <option value="clicks">{tString('clickCount')}</option>
                 </select>
                 
                 <input
                   type="date"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
-                  className="px-4 py-3 border border-stone-300 dark:border-stone-600 rounded-xl bg-stone-50 dark:bg-stone-900 text-stone-800 dark:text-stone-200 focus:ring-2 focus:ring-stone-500 focus:border-stone-500 transition-colors"
+                  placeholder={tString('startDate')}
+                  className="min-w-[160px] px-4 py-3 border border-stone-300 dark:border-stone-600 rounded-xl bg-stone-50 dark:bg-stone-900 text-stone-800 dark:text-stone-200 focus:ring-2 focus:ring-stone-500 focus:border-stone-500 transition-colors cursor-pointer"
                 />
                 
                 <input
                   type="date"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
-                  className="px-4 py-3 border border-stone-300 dark:border-stone-600 rounded-xl bg-stone-50 dark:bg-stone-900 text-stone-800 dark:text-stone-200 focus:ring-2 focus:ring-stone-500 focus:border-stone-500 transition-colors"
+                  placeholder={tString('endDate')}
+                  className="min-w-[160px] px-4 py-3 border border-stone-300 dark:border-stone-600 rounded-xl bg-stone-50 dark:bg-stone-900 text-stone-800 dark:text-stone-200 focus:ring-2 focus:ring-stone-500 focus:border-stone-500 transition-colors cursor-pointer"
                 />
               </div>
             </div>
@@ -418,20 +389,20 @@ export default function DashboardPage() {
         <div className="bg-white/80 dark:bg-stone-800/90 backdrop-blur-sm rounded-2xl shadow-xl border border-stone-200 dark:border-stone-700">
           <div className="p-6 border-b border-stone-200 dark:border-stone-700">
             <h2 className="text-lg font-semibold text-stone-800 dark:text-stone-100">
-              我的短網址
+              {tString('myUrls')}
             </h2>
           </div>
           
           {isLoading ? (
             <div className="p-12 text-center">
               <Loader2 className="h-8 w-8 animate-spin text-stone-600 mx-auto mb-4" />
-              <p className="text-stone-600 dark:text-stone-400">載入中...</p>
+              <p className="text-stone-600 dark:text-stone-400">{tString('loading')}</p>
             </div>
           ) : urls.length === 0 ? (
             <div className="p-12 text-center">
               <LinkIcon className="h-12 w-12 text-stone-400 mx-auto mb-4" />
               <p className="text-stone-600 dark:text-stone-400">
-                {searchTerm ? '沒有找到符合條件的短網址' : '您還沒有建立任何短網址'}
+                {searchTerm ? tString('noUrlsFound') : tString('noUrlsCreated')}
               </p>
             </div>
           ) : (
@@ -446,14 +417,14 @@ export default function DashboardPage() {
                         </h3>
                         {url.isCustom && (
                           <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-xs font-medium rounded-full">
-                            自訂
+                            {tString('custom')}
                           </span>
                         )}
                       </div>
                       
                       <div className="space-y-2">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm text-stone-500 dark:text-stone-400">原始網址:</span>
+                          <span className="text-sm text-stone-500 dark:text-stone-400">{tString('originalUrl')}:</span>
                           <a
                             href={url.originalUrl}
                             target="_blank"
@@ -466,7 +437,7 @@ export default function DashboardPage() {
                         </div>
                         
                         <div className="flex items-center gap-2">
-                          <span className="text-sm text-stone-500 dark:text-stone-400">短網址:</span>
+                          <span className="text-sm text-stone-500 dark:text-stone-400">{tString('shortUrl')}:</span>
                           <button
                             onClick={() => copyToClipboard(url.shortUrl)}
                             className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-mono"
@@ -483,7 +454,7 @@ export default function DashboardPage() {
                         <div className="flex items-center gap-4 text-sm text-stone-500 dark:text-stone-400">
                           <div className="flex items-center gap-1">
                             <TrendingUp className="h-4 w-4" />
-                            {url.clickCount} 次點擊
+                            {url.clickCount} {tString('clicks')}
                           </div>
                           <div className="flex items-center gap-1">
                             <Clock className="h-4 w-4" />
@@ -496,16 +467,16 @@ export default function DashboardPage() {
                     <div className="flex items-center gap-2 ml-4">
                       <button
                         onClick={() => generateQRCode(url.shortUrl, url.id)}
-                        className="p-2 text-stone-600 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700 rounded-lg transition-colors"
-                        title="生成 QR Code"
+                        className="p-2 text-stone-600 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-700 rounded-lg transition-colors cursor-pointer"
+                        title={tString('generateQr')}
                       >
                         <QrCode className="h-4 w-4" />
                       </button>
                       <button
                         onClick={() => deleteUrl(url.id)}
                         disabled={isDeleting === url.id}
-                        className="p-2 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors disabled:opacity-50"
-                        title="刪除"
+                        className="p-2 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
+                        title={tString('delete')}
                       >
                         {isDeleting === url.id ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
@@ -532,7 +503,7 @@ export default function DashboardPage() {
                             QR Code
                           </p>
                           <p className="text-xs text-stone-500 dark:text-stone-400">
-                            掃描以開啟連結
+                            {tString('scanToOpen')}
                           </p>
                         </div>
                       </div>
@@ -552,11 +523,11 @@ export default function DashboardPage() {
                   disabled={currentPage === 1}
                   className="px-4 py-2 bg-stone-100 dark:bg-stone-700 text-stone-800 dark:text-stone-200 rounded-lg hover:bg-stone-200 dark:hover:bg-stone-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                  上一頁
+                  {tString('previousPage')}
                 </button>
                 
                 <span className="text-sm text-stone-600 dark:text-stone-400">
-                  第 {currentPage} 頁，共 {totalPages} 頁
+                  {tString('pageInfo').replace('{current}', currentPage.toString()).replace('{total}', totalPages.toString())}
                 </span>
                 
                 <button
@@ -564,7 +535,7 @@ export default function DashboardPage() {
                   disabled={currentPage === totalPages}
                   className="px-4 py-2 bg-stone-100 dark:bg-stone-700 text-stone-800 dark:text-stone-200 rounded-lg hover:bg-stone-200 dark:hover:bg-stone-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                  下一頁
+                  {tString('nextPage')}
                 </button>
               </div>
             </div>
