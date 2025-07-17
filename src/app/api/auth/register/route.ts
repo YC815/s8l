@@ -35,18 +35,18 @@ export async function POST(request: NextRequest) {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 12)
     
-    // Create user
+    // Create user with auto-verification (temporary until email service is set up)
     const user = await prisma.user.create({
       data: {
         email,
         password: hashedPassword,
         name: name || null,
-        provider: 'email'
+        emailVerified: true // Auto-verify for now
       }
     })
     
     return NextResponse.json({ 
-      message: '註冊成功',
+      message: '註冊成功！您現在可以直接登入。',
       user: {
         id: user.id,
         email: user.email,

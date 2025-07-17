@@ -1,22 +1,12 @@
 import NextAuth from 'next-auth'
 import { PrismaAdapter } from '@auth/prisma-adapter'
 import CredentialsProvider from 'next-auth/providers/credentials'
-import GoogleProvider from 'next-auth/providers/google'
-import GitHubProvider from 'next-auth/providers/github'
 import bcrypt from 'bcryptjs'
 import { prisma } from './db'
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma),
   providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    }),
-    GitHubProvider({
-      clientId: process.env.GITHUB_CLIENT_ID!,
-      clientSecret: process.env.GITHUB_CLIENT_SECRET!,
-    }),
     CredentialsProvider({
       name: 'credentials',
       credentials: {
@@ -47,6 +37,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return null
         }
 
+        // TODO: Re-enable email verification when email service is configured
+        // if (!user.emailVerified) {
+        //   throw new Error('請先驗證您的電子郵件地址')
+        // }
+
         return {
           id: user.id,
           email: user.email,
@@ -63,7 +58,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     signIn: '/auth/signin',
   },
   callbacks: {
-    async jwt({ token, user, account }) {
+    async jwt({ token, user }) {
       if (user) {
         token.id = user.id
       }
@@ -75,33 +70,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
       return session
     },
-    async signIn({ user, account }) {
-      if (account?.provider === 'google' || account?.provider === 'github') {
-        // Handle OAuth provider information in signIn callback
-        try {
-          await prisma.user.upsert({
-            where: { email: user.email! },
-            update: {
-              name: user.name,
-              image: user.image,
-              provider: account.provider,
-              providerId: account.providerAccountId,
-            },
-            create: {
-              email: user.email!,
-              name: user.name,
-              image: user.image,
-              provider: account.provider,
-              providerId: account.providerAccountId,
-            }
-          })
-        } catch (error) {
-          console.error('Error upserting OAuth user:', error)
-          return false
-        }
-        return true
-      }
-      
+    async signIn({ account }) {
       if (account?.provider === 'credentials') {
         return true
       }

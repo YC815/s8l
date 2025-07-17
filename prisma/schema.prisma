@@ -14,25 +14,24 @@ datasource db {
 }
 
 model User {
-  id          String   @id @default(cuid())
-  email       String   @unique
-  password    String?  // Nullable for OAuth users
-  name        String?
-  image       String?
-  provider    String   @default("email") // "email", "google", "github"
-  providerId  String?  // OAuth provider ID
-  emailVerified DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            String   @id @default(cuid())
+  email         String   @unique
+  password      String   // Required for email auth
+  name          String?
+  image         String?
+  emailVerified Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
   
   // Relations
-  customDomains CustomDomain[]
-  urls          UserUrl[]
-  accounts      Account[]
-  sessions      Session[]
+  customDomains      CustomDomain[]
+  urls               UserUrl[]
+  accounts           Account[]
+  sessions           Session[]
+  verificationTokens EmailVerificationToken[]
+  passwordResetTokens PasswordResetToken[]
   
   @@index([email])
-  @@index([provider, providerId])
 }
 
 model Account {
@@ -68,6 +67,32 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model EmailVerificationToken {
+  id      String   @id @default(cuid())
+  token   String   @unique
+  userId  String
+  expires DateTime
+  createdAt DateTime @default(now())
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([token])
+  @@index([userId])
+}
+
+model PasswordResetToken {
+  id      String   @id @default(cuid())
+  token   String   @unique
+  userId  String
+  expires DateTime
+  createdAt DateTime @default(now())
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([token])
+  @@index([userId])
 }
 
 model CustomDomain {

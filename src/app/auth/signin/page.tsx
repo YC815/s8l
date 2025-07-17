@@ -4,7 +4,7 @@ import { useState, Suspense } from 'react'
 import { signIn } from 'next-auth/react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Github, Mail, Eye, EyeOff, ArrowLeft } from 'lucide-react'
+import { Eye, EyeOff, ArrowLeft } from 'lucide-react'
 
 function SignInForm() {
   const [email, setEmail] = useState('')
@@ -41,15 +41,6 @@ function SignInForm() {
     }
   }
 
-  const handleOAuthSignIn = async (provider: string) => {
-    setIsLoading(true)
-    try {
-      await signIn(provider, { callbackUrl })
-    } catch (err) {
-      setError('登入失敗，請重試')
-      setIsLoading(false)
-    }
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-stone-50 via-stone-100 to-stone-200 flex items-center justify-center p-4">
@@ -75,35 +66,6 @@ function SignInForm() {
             </div>
           )}
 
-          {/* OAuth Buttons */}
-          <div className="space-y-3 mb-6">
-            <button
-              onClick={() => handleOAuthSignIn('google')}
-              disabled={isLoading}
-              className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-white border border-stone-300 rounded-xl hover:bg-stone-50 transition-colors disabled:opacity-50"
-            >
-              <Mail className="w-5 h-5 text-red-500" />
-              <span className="font-medium text-stone-700">使用 Google 登入</span>
-            </button>
-            
-            <button
-              onClick={() => handleOAuthSignIn('github')}
-              disabled={isLoading}
-              className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-gray-900 text-white rounded-xl hover:bg-gray-800 transition-colors disabled:opacity-50"
-            >
-              <Github className="w-5 h-5" />
-              <span className="font-medium">使用 GitHub 登入</span>
-            </button>
-          </div>
-
-          <div className="relative mb-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-stone-300" />
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-stone-500">或</span>
-            </div>
-          </div>
 
           {/* Email Form */}
           <form onSubmit={handleEmailSignIn} className="space-y-4">
