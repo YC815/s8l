@@ -6,10 +6,28 @@ import bcrypt from 'bcryptjs'
 import { logEnvironment, checkEnvironment } from './debug'
 
 // Check environment on startup
-checkEnvironment()
-logEnvironment()
+console.log('🚀 Auth configuration starting...')
+try {
+  checkEnvironment()
+  logEnvironment()
+  console.log('✅ Auth environment check passed')
+} catch (error) {
+  console.error('❌ Auth environment check failed:', error)
+}
 
-export const { handlers, signIn, signOut, auth } = NextAuth({
+// Test database connection before creating auth config
+async function testDatabaseConnection() {
+  try {
+    const result = await prisma.$queryRaw`SELECT 1 as test`
+    console.log('✅ Database connection test passed:', result)
+    return true
+  } catch (error) {
+    console.error('❌ Database connection test failed:', error)
+    return false
+  }
+}
+
+const authConfig = {
   adapter: PrismaAdapter(prisma),
   providers: [
     CredentialsProvider({
@@ -71,7 +89,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     error: '/auth/signin', // Redirect errors to signin page instead of default error page
   },
   callbacks: {
-    async jwt({ token, user }) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async jwt({ token, user }: { token: any, user: any }) {
       console.log('🔄 JWT callback:', { hasUser: !!user, hasToken: !!token })
       if (user) {
         token.id = user.id
@@ -79,7 +98,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
       return token
     },
-    async session({ session, token }) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async session({ session, token }: { session: any, token: any }) {
       console.log('📝 Session callback:', { hasSession: !!session, hasToken: !!token })
       if (token.id) {
         session.user.id = token.id as string
@@ -87,7 +107,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
       return session
     },
-    async signIn({ account, user }) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async signIn({ account, user }: { account: any, user: any }) {
       console.log('🚪 SignIn callback:', { provider: account?.provider, hasUser: !!user })
       if (account?.provider === 'credentials') {
         console.log('✅ SignIn: Credentials provider - allowing sign in')
@@ -98,16 +119,57 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return false
     }
   },
-  debug: process.env.NODE_ENV === 'development', // Enable debug in development
+  debug: true, // Always enable debug for now
   logger: {
-    error: (error) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    error: (error: any) => {
       console.error('🔥 NextAuth Error:', error)
+      // Log stack trace for better debugging
+      if (error instanceof Error) {
+        console.error('Stack trace:', error.stack)
+      }
     },
-    warn: (code) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    warn: (code: any) => {
       console.warn('⚠️  NextAuth Warning:', code)
     },
-    debug: (code, metadata) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    debug: (code: any, metadata?: any) => {
       console.log('🐛 NextAuth Debug:', code, metadata)
     }
+  },
+  // Add more detailed error handling
+  events: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async signIn({ user, account, isNewUser }: { user: any, account: any, isNewUser: boolean }) {
+      console.log('📝 SignIn event:', { user: user?.email, account: account?.provider, isNewUser })
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async signOut({ token, session }: { token: any, session: any }) {
+      console.log('📝 SignOut event:', { userId: token?.id || session?.user?.id })
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async createUser({ user }: { user: any }) {
+      console.log('📝 CreateUser event:', { userId: user.id, email: user.email })
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async updateUser({ user }: { user: any }) {
+      console.log('📝 UpdateUser event:', { userId: user.id, email: user.email })
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async linkAccount({ user, account }: { user: any, account: any }) {
+      console.log('📝 LinkAccount event:', { userId: user.id, provider: account.provider })
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async session({ session }: { session: any }) {
+      console.log('📝 Session event:', { userId: session.user?.id, email: session.user?.email })
+    }
   }
-})
+}
+
+console.log('🔧 Creating NextAuth instance...')
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const nextAuth = NextAuth(authConfig as any)
+console.log('✅ NextAuth instance created successfully')
+
+export const { handlers, signIn, signOut, auth } = nextAuth
