@@ -1,9 +1,12 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Copy, Sun, Moon, Link, ExternalLink, Check } from 'lucide-react'
+import { useSession, signOut } from 'next-auth/react'
+import { Copy, Sun, Moon, Link, ExternalLink, Check, LogOut, LayoutDashboard } from 'lucide-react'
+import Link_Component from 'next/link'
 import Image from 'next/image'
 import QRCode from 'qrcode'
+import CustomDomainModal from '@/components/CustomDomainModal'
 
 interface ShortenedUrl {
   shortCode: string
@@ -14,7 +17,13 @@ interface ShortenedUrl {
 }
 
 export default function Home() {
+  const { data: session, status } = useSession()
   const [input, setInput] = useState('')
+  const [customTitle, setCustomTitle] = useState('')
+  const [customPath, setCustomPath] = useState('')
+  const [selectedDomainId, setSelectedDomainId] = useState('')
+  const [selectedDomainPrefix, setSelectedDomainPrefix] = useState('')
+  const [activeTab, setActiveTab] = useState('basic') // 'basic' or 'custom'
   const [results, setResults] = useState<ShortenedUrl[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [darkMode, setDarkMode] = useState(false)
@@ -22,6 +31,7 @@ export default function Home() {
   const [error, setError] = useState('')
   const [copiedUrl, setCopiedUrl] = useState('')
   const [inputError, setInputError] = useState('')
+  const [showDomainModal, setShowDomainModal] = useState(false)
 
   const validateInput = (url: string) => {
     if (!url.trim()) {
@@ -47,7 +57,7 @@ export default function Home() {
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleBasicSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!input.trim() || inputError) return
 
@@ -73,6 +83,60 @@ export default function Home() {
       const newResult: ShortenedUrl = { ...data, qrCode }
       setResults(prev => [newResult, ...prev])
       setInput('')
+      
+      // Smooth scroll to results
+      setTimeout(() => {
+        document.getElementById('results')?.scrollIntoView({ behavior: 'smooth' })
+      }, 100)
+      
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '發生未知錯誤')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleCustomSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!input.trim() || inputError || !selectedDomainId || !customPath.trim()) return
+
+    setIsLoading(true)
+    setError('')
+    
+    try {
+      const response = await fetch('/api/custom-shorten', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          url: input.trim(),
+          customTitle: customTitle.trim() || null,
+          customDomainId: selectedDomainId,
+          customPath: customPath.trim()
+        })
+      })
+      
+      const data = await response.json()
+      
+      if (!response.ok) {
+        throw new Error(data.error || '發生錯誤')
+      }
+      
+      // Generate QR code
+      const qrCode = await QRCode.toDataURL(data.shortUrl)
+      
+      const newResult: ShortenedUrl = { 
+        shortCode: data.customPath,
+        originalUrl: data.originalUrl,
+        title: data.title,
+        shortUrl: data.shortUrl,
+        qrCode 
+      }
+      setResults(prev => [newResult, ...prev])
+      setInput('')
+      setCustomTitle('')
+      setCustomPath('')
+      setSelectedDomainId('')
+      setSelectedDomainPrefix('')
       
       // Smooth scroll to results
       setTimeout(() => {
@@ -131,7 +195,7 @@ export default function Home() {
   }
 
   // Prevent hydration mismatch by not rendering theme-dependent content until mounted
-  if (!mounted) {
+  if (!mounted || status === 'loading') {
     return (
       <div className="min-h-screen bg-stone-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-stone-800"></div>
@@ -145,7 +209,27 @@ export default function Home() {
     }`}>
       <div className="container mx-auto px-4 py-12 max-w-5xl">
         {/* Header */}
-        <div className="text-center mb-16">
+        <div className="text-center mb-16 relative">
+          {/* Navigation */}
+          {session && (
+            <div className="absolute top-0 right-0 flex items-center gap-2">
+              <Link_Component
+                href="/dashboard"
+                className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-stone-600 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200 transition-colors"
+              >
+                <LayoutDashboard className="w-4 h-4" />
+                Dashboard
+              </Link_Component>
+              <button
+                onClick={() => signOut({ callbackUrl: '/' })}
+                className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-stone-600 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200 transition-colors"
+              >
+                <LogOut className="w-4 h-4" />
+                登出
+              </button>
+            </div>
+          )}
+
           <div className="flex justify-center items-center mb-6">
             <div className="p-4 rounded-2xl bg-stone-800 dark:bg-stone-200 shadow-xl">
               <Link className="h-10 w-10 text-stone-100 dark:text-stone-800" />
@@ -157,6 +241,30 @@ export default function Home() {
           <p className="text-lg text-stone-600 dark:text-stone-300 max-w-2xl mx-auto">
             極簡、快速、安全的網址縮短服務，支援 QR Code 生成
           </p>
+          
+          {/* Login prompt for non-logged in users */}
+          {!session && (
+            <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl max-w-md mx-auto">
+              <p className="text-blue-700 dark:text-blue-300 text-sm mb-3">
+                登入可以自訂域名管理以及紀錄短網址紀錄
+              </p>
+              <div className="flex gap-2 justify-center">
+                <Link_Component
+                  href="/auth/signin"
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
+                >
+                  登入
+                </Link_Component>
+                <Link_Component
+                  href="/auth/signup"
+                  className="px-4 py-2 border border-blue-600 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-sm font-medium rounded-lg transition-colors"
+                >
+                  註冊
+                </Link_Component>
+              </div>
+            </div>
+          )}
+
           <button
             onClick={toggleDarkMode}
             className="fixed top-6 right-6 p-3 rounded-full bg-stone-200 dark:bg-stone-700 hover:bg-stone-300 dark:hover:bg-stone-600 transition-all duration-300 shadow-lg hover:shadow-xl z-50"
@@ -169,57 +277,178 @@ export default function Home() {
           </button>
         </div>
 
-        {/* Input Form */}
+        {/* Main Form */}
         <div className="mb-16">
-          <form onSubmit={handleSubmit} className="max-w-4xl mx-auto">
-            <div className="bg-white/80 dark:bg-stone-800/90 backdrop-blur-sm rounded-2xl p-8 pb-12 shadow-2xl border border-stone-200 dark:border-stone-700">
-              <div className="flex flex-col lg:flex-row gap-6">
-                <div className="flex-1">
-                  <label className="block text-sm font-semibold text-stone-700 dark:text-stone-300 mb-3">
-                    請輸入要縮短的網址
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="url"
-                      value={input}
-                      onChange={(e) => {
-                        setInput(e.target.value)
-                        validateInput(e.target.value)
-                      }}
-                      placeholder="https://example.com/very-long-url..."
-                      className={`w-full p-4 border-2 rounded-xl bg-stone-50 dark:bg-stone-900 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 focus:ring-2 transition-all duration-300 h-14 ${
-                        inputError 
-                          ? 'border-red-500 focus:ring-red-500 focus:border-red-500' 
-                          : 'border-stone-200 dark:border-stone-600 focus:ring-stone-500 focus:border-stone-500'
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-white/80 dark:bg-stone-800/90 backdrop-blur-sm rounded-2xl shadow-2xl border border-stone-200 dark:border-stone-700 overflow-hidden">
+              {/* Tabs (only show for logged in users) */}
+              {session && (
+                <div className="border-b border-stone-200 dark:border-stone-700">
+                  <div className="flex">
+                    <button
+                      onClick={() => setActiveTab('basic')}
+                      className={`flex-1 px-6 py-4 text-sm font-medium transition-colors ${
+                        activeTab === 'basic'
+                          ? 'bg-stone-100 dark:bg-stone-700 text-stone-800 dark:text-stone-200 border-b-2 border-stone-800 dark:border-stone-200'
+                          : 'text-stone-600 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200'
                       }`}
-                      disabled={isLoading}
-                    />
-                    {inputError && (
-                      <p className="absolute top-full left-0 mt-2 text-sm text-red-500 dark:text-red-400 font-medium">
-                        {inputError}
-                      </p>
-                    )}
+                    >
+                      基礎短網址
+                    </button>
+                    <button
+                      onClick={() => setActiveTab('custom')}
+                      className={`flex-1 px-6 py-4 text-sm font-medium transition-colors ${
+                        activeTab === 'custom'
+                          ? 'bg-stone-100 dark:bg-stone-700 text-stone-800 dark:text-stone-200 border-b-2 border-stone-800 dark:border-stone-200'
+                          : 'text-stone-600 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200'
+                      }`}
+                    >
+                      自訂義短網址
+                    </button>
                   </div>
                 </div>
-                <div className="flex items-start lg:items-end lg:pt-8">
-                  <button
-                    type="submit"
-                    disabled={!input.trim() || isLoading || !!inputError}
-                    className="px-8 bg-stone-800 hover:bg-stone-900 disabled:bg-stone-400 dark:disabled:bg-stone-500 dark:disabled:text-stone-400 disabled:cursor-not-allowed text-white dark:bg-stone-300 dark:hover:bg-stone-200 dark:text-stone-800 rounded-xl transition-all duration-300 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 disabled:transform-none min-w-[120px] h-14"
-                  >
-                    {isLoading ? (
-                      <div className="flex items-center space-x-2">
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        <span>處理中</span>
+              )}
+
+              {/* Form Content */}
+              <div className="p-8">
+                {(!session || activeTab === 'basic') && (
+                  <form onSubmit={handleBasicSubmit}>
+                    <div className="flex flex-col lg:flex-row gap-6">
+                      <div className="flex-1">
+                        <label className="block text-sm font-semibold text-stone-700 dark:text-stone-300 mb-3">
+                          請輸入要縮短的網址
+                        </label>
+                        <div className="relative">
+                          <input
+                            type="url"
+                            value={input}
+                            onChange={(e) => {
+                              setInput(e.target.value)
+                              validateInput(e.target.value)
+                            }}
+                            placeholder="https://example.com/very-long-url..."
+                            className={`w-full p-4 border-2 rounded-xl bg-stone-50 dark:bg-stone-900 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 focus:ring-2 transition-all duration-300 h-14 ${
+                              inputError 
+                                ? 'border-red-500 focus:ring-red-500 focus:border-red-500' 
+                                : 'border-stone-200 dark:border-stone-600 focus:ring-stone-500 focus:border-stone-500'
+                            }`}
+                            disabled={isLoading}
+                          />
+                          {inputError && (
+                            <p className="absolute top-full left-0 mt-2 text-sm text-red-500 dark:text-red-400 font-medium">
+                              {inputError}
+                            </p>
+                          )}
+                        </div>
                       </div>
-                    ) : (
-                      '縮短網址'
-                    )}
-                  </button>
-                </div>
+                      <div className="flex items-start lg:items-end lg:pt-8">
+                        <button
+                          type="submit"
+                          disabled={!input.trim() || isLoading || !!inputError}
+                          className="px-8 bg-stone-800 hover:bg-stone-900 disabled:bg-stone-400 dark:disabled:bg-stone-500 dark:disabled:text-stone-400 disabled:cursor-not-allowed text-white dark:bg-stone-300 dark:hover:bg-stone-200 dark:text-stone-800 rounded-xl transition-all duration-300 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 disabled:transform-none min-w-[120px] h-14"
+                        >
+                          {isLoading ? (
+                            <div className="flex items-center space-x-2">
+                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                              <span>處理中</span>
+                            </div>
+                          ) : (
+                            '縮短網址'
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  </form>
+                )}
+
+                {session && activeTab === 'custom' && (
+                  <form onSubmit={handleCustomSubmit} className="space-y-6">
+                    <div>
+                      <label className="block text-sm font-semibold text-stone-700 dark:text-stone-300 mb-3">
+                        請輸入要縮短的網址
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="url"
+                          value={input}
+                          onChange={(e) => {
+                            setInput(e.target.value)
+                            validateInput(e.target.value)
+                          }}
+                          placeholder="https://example.com/very-long-url..."
+                          className={`w-full p-4 border-2 rounded-xl bg-stone-50 dark:bg-stone-900 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 focus:ring-2 transition-all duration-300 h-14 ${
+                            inputError 
+                              ? 'border-red-500 focus:ring-red-500 focus:border-red-500' 
+                              : 'border-stone-200 dark:border-stone-600 focus:ring-stone-500 focus:border-stone-500'
+                          }`}
+                          disabled={isLoading}
+                        />
+                        {inputError && (
+                          <p className="absolute top-full left-0 mt-2 text-sm text-red-500 dark:text-red-400 font-medium">
+                            {inputError}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-stone-700 dark:text-stone-300 mb-3">
+                        標題（選填）
+                      </label>
+                      <input
+                        type="text"
+                        value={customTitle}
+                        onChange={(e) => setCustomTitle(e.target.value)}
+                        placeholder="自訂標題，留空則自動抓取"
+                        className="w-full p-4 border-2 border-stone-200 dark:border-stone-600 rounded-xl bg-stone-50 dark:bg-stone-900 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 focus:ring-2 focus:ring-stone-500 focus:border-stone-500 transition-all duration-300"
+                        disabled={isLoading}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-stone-700 dark:text-stone-300 mb-3">
+                        自訂短網址
+                      </label>
+                      <div className="flex gap-3 items-center">
+                        <button
+                          type="button"
+                          onClick={() => setShowDomainModal(true)}
+                          className="px-4 py-4 bg-stone-100 dark:bg-stone-700 border-2 border-stone-200 dark:border-stone-600 rounded-xl hover:bg-stone-200 dark:hover:bg-stone-600 transition-colors min-w-0 h-14"
+                        >
+                          <span className="text-stone-800 dark:text-stone-200 font-medium">
+                            {selectedDomainPrefix ? `${selectedDomainPrefix}.s8l.xyz` : '選擇域名'}
+                          </span>
+                        </button>
+                        <span className="text-stone-600 dark:text-stone-400 font-medium">/</span>
+                        <input
+                          type="text"
+                          value={customPath}
+                          onChange={(e) => setCustomPath(e.target.value)}
+                          placeholder="自訂路徑"
+                          className="flex-1 p-4 border-2 border-stone-200 dark:border-stone-600 rounded-xl bg-stone-50 dark:bg-stone-900 text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 focus:ring-2 focus:ring-stone-500 focus:border-stone-500 transition-all duration-300 h-14"
+                          disabled={isLoading}
+                        />
+                        <button
+                          type="submit"
+                          disabled={!input.trim() || isLoading || !!inputError || !selectedDomainId || !customPath.trim()}
+                          className="px-8 bg-stone-800 hover:bg-stone-900 disabled:bg-stone-400 dark:disabled:bg-stone-500 dark:disabled:text-stone-400 disabled:cursor-not-allowed text-white dark:bg-stone-300 dark:hover:bg-stone-200 dark:text-stone-800 rounded-xl transition-all duration-300 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 disabled:transform-none min-w-[120px] h-14"
+                        >
+                          {isLoading ? (
+                            <div className="flex items-center space-x-2">
+                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                              <span>處理中</span>
+                            </div>
+                          ) : (
+                            '建立'
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  </form>
+                )}
               </div>
             </div>
-          </form>
+          </div>
         </div>
 
         {/* Messages */}
@@ -237,7 +466,6 @@ export default function Home() {
             </div>
           </div>
         )}
-
 
         {/* Results */}
         {results.length > 0 && (
@@ -358,6 +586,17 @@ export default function Home() {
           />
         </a>
       </div>
+
+      {/* Custom Domain Modal */}
+      <CustomDomainModal
+        isOpen={showDomainModal}
+        onClose={() => setShowDomainModal(false)}
+        onSelect={(domainId, prefix) => {
+          setSelectedDomainId(domainId)
+          setSelectedDomainPrefix(prefix)
+          setShowDomainModal(false)
+        }}
+      />
     </div>
   )
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { generateShortCode, validateUrl, fetchPageTitle } from '@/lib/url-shortener'
+import { auth } from '@/lib/auth'
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,12 +23,36 @@ export async function POST(request: NextRequest) {
       // If URL parsing fails, it will be caught by validateUrl
     }
     
+    // Get user session (optional for basic shortening)
+    const session = await auth()
+    
     // Check if URL already exists
     const existingUrl = await prisma.url.findUnique({
       where: { originalUrl: validatedUrl }
     })
     
     if (existingUrl) {
+      // If user is logged in, create a UserUrl record for tracking
+      if (session?.user?.id) {
+        // Check if user already has this URL
+        const existingUserUrl = await prisma.userUrl.findFirst({
+          where: {
+            userId: session.user.id,
+            urlId: existingUrl.id,
+            customDomainId: null // Only for basic short URLs
+          }
+        })
+        
+        if (!existingUserUrl) {
+          await prisma.userUrl.create({
+            data: {
+              userId: session.user.id,
+              urlId: existingUrl.id
+            }
+          })
+        }
+      }
+      
       return NextResponse.json({
         shortCode: existingUrl.shortCode,
         originalUrl: existingUrl.originalUrl,
@@ -67,6 +92,16 @@ export async function POST(request: NextRequest) {
         title
       }
     })
+    
+    // If user is logged in, create a UserUrl record for tracking
+    if (session?.user?.id) {
+      await prisma.userUrl.create({
+        data: {
+          userId: session.user.id,
+          urlId: newUrl.id
+        }
+      })
+    }
     
     return NextResponse.json({
       shortCode: newUrl.shortCode,
