@@ -17,6 +17,8 @@ export function useLanguage() {
   const changeLanguage = (newLanguage: Language) => {
     setLanguage(newLanguage);
     localStorage.setItem('language', newLanguage);
+    // 自動重新整理頁面以套用新語言設定
+    window.location.reload();
   };
 
   const t = (key: TranslationKey) => {
