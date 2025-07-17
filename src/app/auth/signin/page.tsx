@@ -22,19 +22,35 @@ function SignInForm() {
     setIsLoading(true)
     setError('')
 
+    // Basic client-side validation
+    if (!email || !password) {
+      setError('請填寫所有必填字段')
+      setIsLoading(false)
+      return
+    }
+
     try {
       const result = await signIn('credentials', {
-        email,
+        email: email.trim().toLowerCase(),
         password,
         redirect: false,
       })
 
       if (result?.error) {
-        setError('電子郵件或密碼錯誤')
+        // Handle specific error types
+        if (result.error === 'CredentialsSignin') {
+          setError('電子郵件或密碼錯誤')
+        } else if (result.error === 'Configuration') {
+          setError('服務器配置錯誤，請稍後重試')
+        } else {
+          setError('登入失敗，請重試')
+        }
       } else {
+        // Success - redirect to callback URL
         router.push(callbackUrl)
       }
-    } catch (err) {
+    } catch (error) {
+      console.error('Sign in error:', error)
       setError('登入失敗，請重試')
     } finally {
       setIsLoading(false)

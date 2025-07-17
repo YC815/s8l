@@ -21,36 +21,61 @@ export default function SignUpPage() {
     setIsLoading(true)
     setError('')
 
+    // Basic client-side validation
+    if (!email || !password) {
+      setError('請填寫所有必填字段')
+      setIsLoading(false)
+      return
+    }
+
+    if (password.length < 8) {
+      setError('密碼至少需要 8 個字符')
+      setIsLoading(false)
+      return
+    }
+
     try {
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password, name }),
+        body: JSON.stringify({ 
+          email: email.trim().toLowerCase(), 
+          password, 
+          name: name.trim() || undefined 
+        }),
       })
 
       const data = await response.json()
 
       if (!response.ok) {
-        setError(data.error || '註冊失敗')
+        if (response.status === 429) {
+          setError('註冊請求過於頻繁，請稍後重試')
+        } else {
+          setError(data.error || '註冊失敗')
+        }
         return
       }
 
       // Auto sign in after successful registration
       const result = await signIn('credentials', {
-        email,
+        email: email.trim().toLowerCase(),
         password,
         redirect: false,
       })
 
       if (result?.error) {
         setError('註冊成功但登入失敗，請手動登入')
-        router.push('/auth/signin')
+        // Wait a bit before redirecting to show the message
+        setTimeout(() => {
+          router.push('/auth/signin')
+        }, 2000)
       } else {
         router.push('/')
       }
-    } catch (err) {
+    } catch (error) {
+      console.error('Sign up error:', error)
       setError('註冊失敗，請重試')
     } finally {
       setIsLoading(false)
