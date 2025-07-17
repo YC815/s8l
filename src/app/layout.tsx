@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "S8L 短網址服務",
+  title: "S8L 短網址",
   description: "S[horterur]L",
 };
 

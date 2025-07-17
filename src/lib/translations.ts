@@ -2,7 +2,6 @@ export const translations = {
   zh: {
     // Header
     title: "S8L 短網址",
-    subtitle: "極簡、快速、安全的網址縮短服務，支援 QR Code 生成",
     
     // Navigation
     dashboard: "Dashboard",
@@ -90,7 +89,6 @@ export const translations = {
   en: {
     // Header
     title: "S8L URL Shortener",
-    subtitle: "Simple, fast, and secure URL shortening service with QR Code generation",
     
     // Navigation
     dashboard: "Dashboard",
