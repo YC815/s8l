@@ -40,11 +40,7 @@ export default function Navigation({ mode, darkMode, onToggleDarkMode }: Navigat
                 <p className="text-sm text-stone-600 dark:text-stone-400">
                   {tString('welcomeBack')}，{session?.user?.name || session?.user?.email}
                 </p>
-              ) : (
-                <p className="text-sm text-stone-600 dark:text-stone-400">
-                  {tString('subtitle')}
-                </p>
-              )}
+              ) : null}
             </div>
           </div>
 
