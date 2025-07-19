@@ -79,17 +79,18 @@ export function useLanguage() {
     initializeLanguage();
   }, []);
 
+
   const changeLanguage = (newLanguage: Language) => {
-    setLanguage(newLanguage);
-    localStorage.setItem('language', newLanguage);
-    
     if (typeof window !== 'undefined') {
-      // 更新 URL 查詢參數但不觸發頁面導航（實現熱更新）
+      // 更新 localStorage
+      localStorage.setItem('language', newLanguage);
+      
+      // 更新 URL 查詢參數
       const url = new URL(window.location.href);
       url.searchParams.set('lang', newLanguage);
       
-      // 使用 replaceState 更新 URL 而不觸發頁面重新載入
-      window.history.replaceState({}, '', url.toString());
+      // 直接重新整理頁面到新的 URL
+      window.location.href = url.toString();
     }
   };
 

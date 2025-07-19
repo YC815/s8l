@@ -33,8 +33,8 @@ export default function LanguageDropdown() {
   const currentLanguage = languageOptions.find(option => option.code === language) || languageOptions[0]
 
   const handleLanguageChange = (newLanguage: Language) => {
+    // 直接切換語言（會觸發頁面重新整理）
     changeLanguage(newLanguage)
-    setIsOpen(false)
   }
 
   return (
