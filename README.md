@@ -2,7 +2,6 @@
 
 > 一個基於 Next.js 15 和 PostgreSQL 的現代化短網址服務，提供用戶認證、自訂域名、QR Code 生成、深色模式和中文界面。
 
-![S8L Demo](https://via.placeholder.com/800x400/1c1917/ffffff?text=S8L+Short+URL+Service)
 
 ## ✨ 特色功能
 
