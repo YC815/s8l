@@ -1,10 +1,8 @@
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { translations, Language, TranslationKey } from '@/lib/translations';
 import { detectBestLanguage, getCachedGeoLanguage, setCachedGeoLanguage } from '@/lib/geoDetection';
 
 export function useLanguage() {
-  const router = useRouter();
   const [language, setLanguage] = useState<Language>('zh');
   const [mounted, setMounted] = useState(false);
   const [isDetecting, setIsDetecting] = useState(false);
@@ -86,12 +84,12 @@ export function useLanguage() {
     localStorage.setItem('language', newLanguage);
     
     if (typeof window !== 'undefined') {
-      // 更新 URL 查詢參數
+      // 更新 URL 查詢參數但不觸發頁面導航（實現熱更新）
       const url = new URL(window.location.href);
       url.searchParams.set('lang', newLanguage);
       
-      // 導航到新的 URL（帶有語言參數）
-      router.push(url.pathname + url.search);
+      // 使用 replaceState 更新 URL 而不觸發頁面重新載入
+      window.history.replaceState({}, '', url.toString());
     }
   };
 
