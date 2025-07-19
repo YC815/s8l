@@ -1,10 +1,26 @@
 const URL_SAFE_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_'
 
+// Reserved words that cannot be used as short codes to avoid route conflicts
+const RESERVED_WORDS = ['line', 'auth', 'api', 'dashboard', 'admin', 'app', 'www', 'ftp', 'mail', 'docs']
+
 export function generateShortCode(length: number = 6): string {
   let result = ''
-  for (let i = 0; i < length; i++) {
+  let attempts = 0
+  const maxAttempts = 50
+  
+  do {
+    result = ''
+    for (let i = 0; i < length; i++) {
+      result += URL_SAFE_CHARS.charAt(Math.floor(Math.random() * URL_SAFE_CHARS.length))
+    }
+    attempts++
+  } while (RESERVED_WORDS.includes(result.toLowerCase()) && attempts < maxAttempts)
+  
+  // If we couldn't generate a non-reserved code, add a random suffix
+  if (RESERVED_WORDS.includes(result.toLowerCase())) {
     result += URL_SAFE_CHARS.charAt(Math.floor(Math.random() * URL_SAFE_CHARS.length))
   }
+  
   return result
 }
 

@@ -2,7 +2,7 @@
 const nextConfig = {
   serverExternalPackages: ['bcryptjs'],
   images: {
-    domains: ['zeabur.com']
+    domains: ['zeabur.com', 'qr-official.line.me', 'scdn.line-apps.com']
   }
 }
 
