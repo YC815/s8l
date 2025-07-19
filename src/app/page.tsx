@@ -3,11 +3,11 @@
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { Copy, Link, ExternalLink, Check } from 'lucide-react'
-import Link_Component from 'next/link'
 import Image from 'next/image'
 import QRCode from 'qrcode'
 import CustomDomainModal from '@/components/CustomDomainModal'
 import Navigation from '@/components/Navigation'
+import LanguageLink from '@/components/LanguageLink'
 import { useLanguage } from '@/hooks/useLanguage'
 
 interface ShortenedUrl {
@@ -237,18 +237,18 @@ export default function Home() {
                 {tString('loginPrompt')}
               </p>
               <div className="flex gap-2 justify-center">
-                <Link_Component
+                <LanguageLink
                   href="/auth/signin"
                   className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
                 >
                   {tString('login')}
-                </Link_Component>
-                <Link_Component
+                </LanguageLink>
+                <LanguageLink
                   href="/auth/signup"
                   className="px-4 py-2 border border-blue-600 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-sm font-medium rounded-lg transition-colors"
                 >
                   {tString('signup')}
-                </Link_Component>
+                </LanguageLink>
               </div>
             </div>
           )}

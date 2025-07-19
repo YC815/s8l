@@ -9,9 +9,9 @@ import {
   Home,
   Link as LinkIcon
 } from 'lucide-react'
-import Link from 'next/link'
 import { useLanguage } from '@/hooks/useLanguage'
 import LanguageDropdown from './LanguageDropdown'
+import LanguageLink from './LanguageLink'
 
 interface NavigationProps {
   mode: 'home' | 'dashboard' | 'line'
@@ -67,32 +67,32 @@ export default function Navigation({ mode, darkMode, onToggleDarkMode }: Navigat
             {session ? (
               mode === 'home' ? (
                 // On home page, show Dashboard link
-                <Link
+                <LanguageLink
                   href="/dashboard"
                   className="p-3 rounded-full bg-stone-100 dark:bg-stone-700 hover:bg-stone-200 dark:hover:bg-stone-600 transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105"
                   title={tString('dashboard')}
                 >
                   <LayoutDashboard className="h-5 w-5 text-stone-600 dark:text-stone-400" />
-                </Link>
+                </LanguageLink>
               ) : (
                 // On dashboard or line page, show Home link
-                <Link
+                <LanguageLink
                   href="/"
                   className="p-3 rounded-full bg-stone-100 dark:bg-stone-700 hover:bg-stone-200 dark:hover:bg-stone-600 transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105"
                   title={tString('home')}
                 >
                   <Home className="h-5 w-5 text-stone-600 dark:text-stone-400" />
-                </Link>
+                </LanguageLink>
               )
             ) : (
               // Not logged in, show login link
-              <Link
+              <LanguageLink
                 href="/auth/signin"
                 className="p-3 rounded-full bg-blue-100 dark:bg-blue-900 hover:bg-blue-200 dark:hover:bg-blue-800 transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105"
                 title={tString('login')}
               >
                 <LogOut className="h-5 w-5 text-blue-600 dark:text-blue-400 rotate-180" />
-              </Link>
+              </LanguageLink>
             )}
 
             {/* Logout button - always visible when logged in */}

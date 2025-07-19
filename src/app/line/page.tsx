@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { Link as LinkIcon, MessageCircle, Zap } from 'lucide-react'
-import Link from 'next/link'
 import Image from 'next/image'
 import Navigation from '@/components/Navigation'
+import LanguageLink from '@/components/LanguageLink'
 import { useLanguage } from '@/hooks/useLanguage'
 
 export default function LinePage() {
@@ -182,13 +182,13 @@ export default function LinePage() {
 
               {/* Back to main site */}
               <div className="border-t border-stone-200 dark:border-stone-700 pt-8 mt-12 text-center">
-                <Link
+                <LanguageLink
                   href="/"
                   className="inline-flex items-center space-x-2 px-6 py-3 bg-stone-800 hover:bg-stone-900 text-white dark:bg-stone-300 dark:hover:bg-stone-200 dark:text-stone-800 rounded-xl transition-all duration-300 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
                 >
                   <LinkIcon className="h-5 w-5" />
                   <span>{tString('goToS8lService')}</span>
-                </Link>
+                </LanguageLink>
               </div>
             </div>
           </div>
