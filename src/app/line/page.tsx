@@ -109,6 +109,9 @@ export default function LinePage() {
                     <p className="text-sm text-stone-500 dark:text-stone-400 mt-3">
                       {tString('useLineApp')}
                     </p>
+                    <p className="text-lg font-semibold text-green-600 dark:text-green-400 mt-2">
+                      ID: @191mimiw
+                    </p>
                   </div>
 
                   {/* Right side - Button and Info */}
