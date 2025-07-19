@@ -5,8 +5,10 @@ import { Link as LinkIcon, MessageCircle, Zap } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import Navigation from '@/components/Navigation'
+import { useLanguage } from '@/hooks/useLanguage'
 
 export default function LinePage() {
+  const { tString } = useLanguage()
   const [darkMode, setDarkMode] = useState(false)
   const [mounted, setMounted] = useState(false)
 
@@ -59,7 +61,7 @@ export default function LinePage() {
     }`}>
       {/* Navigation */}
       <Navigation 
-        mode="home" 
+        mode="line" 
         darkMode={darkMode} 
         onToggleDarkMode={toggleDarkMode} 
       />
@@ -73,13 +75,13 @@ export default function LinePage() {
             </div>
           </div>
           <h1 className="text-5xl font-bold text-stone-800 dark:text-stone-100 mb-4">
-            S8L Line Bot
+            {tString('lineBotTitle')}
           </h1>
           <p className="text-2xl text-green-600 dark:text-green-400 font-semibold mb-2">
-            簡單使用，貼上網址發送即可
+            {tString('lineBotSlogan')}
           </p>
           <p className="text-lg text-stone-600 dark:text-stone-400 max-w-2xl mx-auto">
-            透過 Line Bot 快速縮短網址，無需開啟網頁，直接在聊天室中完成操作
+            {tString('lineBotDescription')}
           </p>
         </div>
 
@@ -93,7 +95,7 @@ export default function LinePage() {
                   {/* Left side - QR Code */}
                   <div className="text-center">
                     <h3 className="text-2xl font-bold text-stone-800 dark:text-stone-200 mb-6">
-                      掃描 QR Code 加入好友
+                      {tString('scanQrToAdd')}
                     </h3>
                     <div className="inline-block p-4 bg-white dark:bg-stone-900 rounded-2xl shadow-xl border border-stone-200 dark:border-stone-600">
                       <Image
@@ -105,7 +107,7 @@ export default function LinePage() {
                       />
                     </div>
                     <p className="text-sm text-stone-500 dark:text-stone-400 mt-3">
-                      使用 Line App 掃描此 QR Code
+                      {tString('useLineApp')}
                     </p>
                   </div>
 
@@ -113,10 +115,10 @@ export default function LinePage() {
                   <div className="space-y-6">
                     <div>
                       <h3 className="text-2xl font-bold text-stone-800 dark:text-stone-200 mb-4">
-                        或點擊按鈕加入
+                        {tString('orClickToAdd')}
                       </h3>
                       <p className="text-stone-600 dark:text-stone-400 mb-6">
-                        快速加入 S8L Line Bot，開始享受便利的縮網址服務
+                        {tString('addFriendDescription')}
                       </p>
                     </div>
 
@@ -129,7 +131,7 @@ export default function LinePage() {
                     >
                       <div className="flex items-center justify-center space-x-3">
                         <MessageCircle className="h-6 w-6" />
-                        <span>打開 Line 加入好友</span>
+                        <span>{tString('addLineBot')}</span>
                       </div>
                     </a>
                   </div>
@@ -139,7 +141,7 @@ export default function LinePage() {
               {/* How to use section */}
               <div className="border-t border-stone-200 dark:border-stone-700 pt-12 text-center">
                 <h2 className="text-3xl font-bold text-stone-800 dark:text-stone-200 mb-8">
-                  使用方式
+                  {tString('howToUse')}
                 </h2>
                 <div className="grid md:grid-cols-3 gap-8">
                   <div className="flex flex-col items-center">
@@ -147,10 +149,10 @@ export default function LinePage() {
                       <MessageCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
                     </div>
                     <h3 className="text-lg font-semibold text-stone-800 dark:text-stone-200 mb-2">
-                      1. 加入好友
+                      {tString('step1AddFriend')}
                     </h3>
                     <p className="text-stone-600 dark:text-stone-400 text-center">
-                      掃描 QR Code 或點擊加好友按鈕
+                      {tString('step1Description')}
                     </p>
                   </div>
                   <div className="flex flex-col items-center">
@@ -158,10 +160,10 @@ export default function LinePage() {
                       <LinkIcon className="h-8 w-8 text-blue-600 dark:text-blue-400" />
                     </div>
                     <h3 className="text-lg font-semibold text-stone-800 dark:text-stone-200 mb-2">
-                      2. 貼上長網址
+                      {tString('step2PasteLongUrl')}
                     </h3>
                     <p className="text-stone-600 dark:text-stone-400 text-center">
-                      將想要縮短的長網址貼到聊天室發送
+                      {tString('step2Description')}
                     </p>
                   </div>
                   <div className="flex flex-col items-center">
@@ -169,10 +171,10 @@ export default function LinePage() {
                       <Zap className="h-8 w-8 text-purple-600 dark:text-purple-400" />
                     </div>
                     <h3 className="text-lg font-semibold text-stone-800 dark:text-stone-200 mb-2">
-                      3. 獲得短網址
+                      {tString('step3GetShortUrl')}
                     </h3>
                     <p className="text-stone-600 dark:text-stone-400 text-center">
-                      Bot 會立即回傳縮短後的網址，即時便利
+                      {tString('step3Description')}
                     </p>
                   </div>
                 </div>
@@ -185,7 +187,7 @@ export default function LinePage() {
                   className="inline-flex items-center space-x-2 px-6 py-3 bg-stone-800 hover:bg-stone-900 text-white dark:bg-stone-300 dark:hover:bg-stone-200 dark:text-stone-800 rounded-xl transition-all duration-300 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
                 >
                   <LinkIcon className="h-5 w-5" />
-                  <span>前往 S8L 短網址服務</span>
+                  <span>{tString('goToS8lService')}</span>
                 </Link>
               </div>
             </div>

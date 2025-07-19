@@ -4,7 +4,6 @@ import { useSession, signOut } from 'next-auth/react'
 import { 
   Sun, 
   Moon, 
-  Languages, 
   LogOut, 
   LayoutDashboard, 
   Home,
@@ -12,16 +11,17 @@ import {
 } from 'lucide-react'
 import Link from 'next/link'
 import { useLanguage } from '@/hooks/useLanguage'
+import LanguageDropdown from './LanguageDropdown'
 
 interface NavigationProps {
-  mode: 'home' | 'dashboard'
+  mode: 'home' | 'dashboard' | 'line'
   darkMode: boolean
   onToggleDarkMode: () => void
 }
 
 export default function Navigation({ mode, darkMode, onToggleDarkMode }: NavigationProps) {
   const { data: session } = useSession()
-  const { language, changeLanguage, tString } = useLanguage()
+  const { tString } = useLanguage()
 
   return (
     <div className="bg-white/90 dark:bg-stone-800/90 backdrop-blur-sm border-b border-stone-200 dark:border-stone-700 sticky top-0 z-50 shadow-sm">
@@ -35,6 +35,7 @@ export default function Navigation({ mode, darkMode, onToggleDarkMode }: Navigat
             <div>
               <h1 className="text-xl font-bold text-stone-800 dark:text-stone-100">
                 S8L {mode === 'dashboard' ? `- ${tString('dashboard')}` : ''}
+                {mode === 'line' ? ' - Line Bot' : ''}
               </h1>
               {mode === 'dashboard' && session ? (
                 <p className="text-sm text-stone-600 dark:text-stone-400">
@@ -44,16 +45,10 @@ export default function Navigation({ mode, darkMode, onToggleDarkMode }: Navigat
             </div>
           </div>
 
-          {/* Right side - Three circular buttons */}
+          {/* Right side - Circular buttons */}
           <div className="flex items-center gap-3">
-            {/* Language Toggle */}
-            <button
-              onClick={() => changeLanguage(language === 'zh' ? 'en' : 'zh')}
-              className="p-3 rounded-full bg-stone-100 dark:bg-stone-700 hover:bg-stone-200 dark:hover:bg-stone-600 transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105"
-              title={language === 'zh' ? 'Switch to English' : '切換為中文'}
-            >
-              <Languages className="h-5 w-5 text-stone-600 dark:text-stone-400" />
-            </button>
+            {/* Language Dropdown */}
+            <LanguageDropdown />
 
             {/* Dark Mode Toggle */}
             <button
@@ -80,7 +75,7 @@ export default function Navigation({ mode, darkMode, onToggleDarkMode }: Navigat
                   <LayoutDashboard className="h-5 w-5 text-stone-600 dark:text-stone-400" />
                 </Link>
               ) : (
-                // On dashboard, show Home link
+                // On dashboard or line page, show Home link
                 <Link
                   href="/"
                   className="p-3 rounded-full bg-stone-100 dark:bg-stone-700 hover:bg-stone-200 dark:hover:bg-stone-600 transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105"

@@ -9,7 +9,7 @@ export function useLanguage() {
     setMounted(true);
     // Check localStorage for saved language preference
     const savedLanguage = localStorage.getItem('language') as Language;
-    if (savedLanguage && (savedLanguage === 'zh' || savedLanguage === 'en')) {
+    if (savedLanguage && (savedLanguage === 'zh' || savedLanguage === 'en' || savedLanguage === 'ja')) {
       setLanguage(savedLanguage);
     }
   }, []);

@@ -85,6 +85,24 @@ export const translations = {
     day: "日",
     months: ["一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"] as const,
     weekdays: ["日", "一", "二", "三", "四", "五", "六"] as const,
+
+    // Line Bot page translations
+    lineBotTitle: "S8L Line Bot",
+    lineBotSlogan: "簡單使用，貼上網址發送即可",
+    lineBotDescription: "透過 Line Bot 快速縮短網址，無需開啟網頁，直接在聊天室中完成操作",
+    scanQrToAdd: "掃描 QR Code 加入好友",
+    orClickToAdd: "或點擊按鈕加入",
+    addFriendDescription: "快速加入 S8L Line Bot，開始享受便利的縮網址服務",
+    addLineBot: "打開 Line 加入好友",
+    useLineApp: "使用 Line App 掃描此 QR Code",
+    howToUse: "使用方式",
+    step1AddFriend: "1. 加入好友",
+    step1Description: "掃描 QR Code 或點擊加好友按鈕",
+    step2PasteLongUrl: "2. 貼上長網址",
+    step2Description: "將想要縮短的長網址貼到聊天室發送",
+    step3GetShortUrl: "3. 獲得短網址",
+    step3Description: "Bot 會立即回傳縮短後的網址，即時便利",
+    goToS8lService: "前往 S8L 短網址服務"
   },
   en: {
     // Header
@@ -172,6 +190,129 @@ export const translations = {
     day: "Day",
     months: ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"] as const,
     weekdays: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const,
+
+    // Line Bot page translations
+    lineBotTitle: "S8L Line Bot",
+    lineBotSlogan: "Simple to use, just paste URL and send",
+    lineBotDescription: "Quickly shorten URLs via Line Bot, no need to open web pages, complete operations directly in chat room",
+    scanQrToAdd: "Scan QR Code to add friend",
+    orClickToAdd: "Or click button to add",
+    addFriendDescription: "Quickly add S8L Line Bot and start enjoying convenient URL shortening service",
+    addLineBot: "Open Line to add friend",
+    useLineApp: "Scan this QR Code with Line App",
+    howToUse: "How to Use",
+    step1AddFriend: "1. Add Friend",
+    step1Description: "Scan QR Code or click add friend button",
+    step2PasteLongUrl: "2. Paste Long URL",
+    step2Description: "Paste the long URL you want to shorten into the chat room and send",
+    step3GetShortUrl: "3. Get Short URL",
+    step3Description: "Bot will immediately return the shortened URL, instant and convenient",
+    goToS8lService: "Go to S8L URL Shortening Service"
+  },
+  ja: {
+    // Header
+    title: "S8L 短縮URL",
+    
+    // Navigation
+    dashboard: "ダッシュボード",
+    logout: "ログアウト",
+    login: "ログイン",
+    signup: "新規登録",
+    
+    // Login prompt
+    loginPrompt: "ログインしてカスタムドメイン管理と短縮URLの記録を行う",
+    
+    // Tabs
+    basicShortUrl: "基本短縮URL",
+    customShortUrl: "カスタム短縮URL",
+    
+    // Form labels
+    enterUrlLabel: "短縮したいURLを入力してください",
+    titleLabel: "タイトル（任意）",
+    titlePlaceholder: "カスタムタイトル、空白の場合は自動取得",
+    customUrlLabel: "カスタム短縮URL",
+    customPathPlaceholder: "カスタムパス",
+    selectDomain: "ドメイン選択",
+    
+    // Buttons
+    shortenUrl: "URL短縮",
+    create: "作成",
+    processing: "処理中",
+    
+    // Results
+    resultsTitle: "短縮結果",
+    originalUrl: "元のURL",
+    shortUrl: "短縮URL",
+    qrCode: "QRコード",
+    qrCodeHint: "スキャンしてリンクを開く",
+    
+    // Errors
+    invalidUrl: "有効なURL形式を入力してください",
+    cannotShortenSelf: "このサービスのURLは短縮できません",
+    unknownError: "不明なエラーが発生しました",
+    errorOccurred: "エラーが発生しました",
+    
+    // Copy functionality
+    copyShortUrl: "短縮URLをコピー",
+    
+    // Dashboard
+    welcomeBack: "おかえりなさい",
+    home: "ホーム",
+    totalUrls: "総URL数",
+    totalClicks: "総クリック数",
+    customDomains: "カスタムドメイン数",
+    customDomainManagement: "カスタムドメイン管理",
+    noDomains: "カスタムドメインがまだありません。各ユーザーは最大2つのドメインを作成できます",
+    createdAt: "作成日時",
+    myUrls: "マイURL",
+    loading: "読み込み中...",
+    noUrlsFound: "条件に一致するURLが見つかりません",
+    noUrlsCreated: "まだURLを作成していません",
+    custom: "カスタム",
+    clicks: "クリック",
+    generateQr: "QRコード生成",
+    delete: "削除",
+    scanToOpen: "スキャンしてリンクを開く",
+    previousPage: "前へ",
+    nextPage: "次へ",
+    pageInfo: "{current} / {total} ページ",
+    searchPlaceholder: "URLタイトルまたは元のURLを検索...",
+    newest: "最新",
+    oldest: "最古",
+    clickCount: "クリック数",
+    confirmDelete: "このURLを削除してもよろしいですか？",
+    confirmDeleteDomain: "このドメインを削除してもよろしいですか？このドメイン下のすべてのURLも削除されます。",
+    
+    // Date picker
+    startDate: "開始日",
+    endDate: "終了日",
+    selectDate: "日付選択",
+    cancel: "キャンセル",
+    confirm: "確認",
+    today: "今日",
+    year: "年",
+    month: "月",
+    day: "日",
+    months: ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"] as const,
+    weekdays: ["日", "月", "火", "水", "木", "金", "土"] as const,
+
+    // Line Bot page translations
+    lineBotTitle: "S8L Line Bot",
+    lineBotSlogan: "簡単使用、URLを貼って送信するだけ",
+    lineBotDescription: "Line Botで簡単にURL短縮、ウェブページを開く必要なし、チャットルームで直接操作完了",
+    scanQrToAdd: "QRコードをスキャンして友達追加",
+    orClickToAdd: "またはボタンをクリックして追加",
+    addFriendDescription: "S8L Line Botを友達追加して、便利なURL短縮サービスを開始",
+    addLineBot: "Line Botを友達追加",
+    useLineApp: "Line AppでこのQRコードをスキャン",
+    howToUse: "使用方法",
+    step1AddFriend: "1. 友達追加",
+    step1Description: "QRコードをスキャンまたは友達追加ボタンをクリック",
+    step2PasteLongUrl: "2. 長いURLを貼り付け",
+    step2Description: "短縮したい長いURLをチャットルームに貼り付けて送信",
+    step3GetShortUrl: "3. 短縮URLを取得",
+    step3Description: "Botがすぐに短縮されたURLを返信、即座に便利",
+    goToS8lService: "S8L短縮URLサービスへ"
   }
 } as const;
 
