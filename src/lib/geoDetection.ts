@@ -20,57 +20,39 @@ const COUNTRY_LANGUAGE_MAP: Record<string, Language> = {
 // 預設語言為英文
 const DEFAULT_LANGUAGE: Language = 'en'
 
-// API 響應類型定義
-interface IpapiCoResponse {
-  country_name: string
-  country_code: string
-  region: string
-  city: string
-}
-
-interface IpApiComResponse {
-  country: string
-  countryCode: string
-  regionName: string
-  city: string
-}
-
-interface IpinfoResponse {
-  country: string
-  region: string
-  city: string
-}
+// 統一的 API 響應類型
+type ApiResponse = Record<string, unknown>
 
 // 多個免費 IP 地理位置 API 服務
 const GEO_APIS = [
   {
     name: 'ipapi.co',
     url: 'https://ipapi.co/json/',
-    parseResponse: (data: IpapiCoResponse): GeoLocation => ({
-      country: data.country_name,
-      countryCode: data.country_code,
-      region: data.region,
-      city: data.city
+    parseResponse: (data: ApiResponse): GeoLocation => ({
+      country: (data.country_name as string) || '',
+      countryCode: (data.country_code as string) || '',
+      region: (data.region as string) || '',
+      city: (data.city as string) || ''
     })
   },
   {
     name: 'ip-api.com',
     url: 'https://ip-api.com/json/',
-    parseResponse: (data: IpApiComResponse): GeoLocation => ({
-      country: data.country,
-      countryCode: data.countryCode,
-      region: data.regionName,
-      city: data.city
+    parseResponse: (data: ApiResponse): GeoLocation => ({
+      country: (data.country as string) || '',
+      countryCode: (data.countryCode as string) || '',
+      region: (data.regionName as string) || '',
+      city: (data.city as string) || ''
     })
   },
   {
     name: 'ipinfo.io',
     url: 'https://ipinfo.io/json',
-    parseResponse: (data: IpinfoResponse): GeoLocation => ({
-      country: data.country,
-      countryCode: data.country,
-      region: data.region,
-      city: data.city
+    parseResponse: (data: ApiResponse): GeoLocation => ({
+      country: (data.country as string) || '',
+      countryCode: (data.country as string) || '',
+      region: (data.region as string) || '',
+      city: (data.city as string) || ''
     })
   }
 ] as const
@@ -80,9 +62,9 @@ const GEO_APIS = [
  */
 async function fetchGeoFromAPI(
   api: {
-    name: string
-    url: string
-    parseResponse: (data: IpapiCoResponse | IpApiComResponse | IpinfoResponse) => GeoLocation
+    readonly name: string
+    readonly url: string
+    readonly parseResponse: (data: ApiResponse) => GeoLocation
   }, 
   timeout: number = 3000
 ): Promise<GeoLocation> {
